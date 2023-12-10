@@ -14,7 +14,10 @@ const app = new App({
 app.command('/bym', async ({ command, ack, respond }) => {
   console.log(`Received command: ${command.text}`);
   await ack();
-  await say(`Echo: ${command.text}`);
+  await respond({
+    text: `Echo: ${command.text}`,
+    in_channel: true,
+  });
 });
 
 (async () => {
