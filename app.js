@@ -11,59 +11,13 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
-
-app.message(':wave:', async ({ message, say }) => {
-  // say() sends a message to the channel where the event was triggered
-  await say({
-    blocks: [
-      {
-        "type": "section",
-        "text": {
-          "type": "mrkdwn",
-          "text": `Hey there <@${message.user}>!`
-        },
-        "accessory": {
-          "type": "button",
-          "text": {
-            "type": "plain_text",
-            "text": "Click Me"
-          },
-          "action_id": "button_click"
-        }
-      }
-    ],
-    text: `Hey there <@${message.user}>!`,
-    thread_ts: message.ts
-  });
-});
-
-app.event('app_mention', async ({ event, say }) => {
-  await say({
-    text: `Hello <@${event.user}>: If you send me a :wave: I'll send you a button to click. If you add a reaction to a message I'll say thanks.`,
-    thread_ts: event.ts
-  })
-});
-
-app.event('reaction_added', async ({ event, say }) => {
-  await say({
-    text: `Thanks for the :${event.reaction}:`,
-    thread_ts: event.item.ts
-  })
-});
-
-app.action('button_click', async ({ body, ack, say }) => {
-  // Acknowledge the action
+app.command('/bym', async ({ command, ack, respond }) => {
+  console.log(`Received command: ${command.text}`);
   await ack();
-  // console.log(JSON.stringify(body,null,2))
-  await say({
-    text: `<@${body.user.id}> you clicked the button. Well done.`,
-    thread_ts: body.message.ts
-  });
+  await respond(`Echo: ${command.text}`);
 });
 
 (async () => {
-  // Start the app
   await app.start(process.env.PORT || 3000);
-
-  console.log('⚡️ Bolt app is running!');
+  console.log('Brew Your Mind bot is running!');
 })();

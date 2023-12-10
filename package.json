@@ -1,5 +1,5 @@
 {
-  "name": "starter-slack-boltjs",
+  "name": "brew-your-mind-slackbot",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "Kam Lasater <kam.lasater@cyclic.sh>",
+  "author": "Mate Karacsony",
   "license": "ISC",
   "dependencies": {
     "@slack/bolt": "^3.10.0",
