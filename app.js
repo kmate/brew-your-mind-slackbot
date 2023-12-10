@@ -14,7 +14,7 @@ const app = new App({
 app.command('/bym', async ({ command, ack, respond }) => {
   console.log(`Received command: ${command.text}`);
   await ack();
-  await respond(`Echo: ${command.text}`);
+  await say(`Echo: ${command.text}`);
 });
 
 (async () => {
