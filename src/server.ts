@@ -1,9 +1,9 @@
-const express = require('express')
-const { App, ExpressReceiver } = require('@slack/bolt');
+import express from "express";
+import { App, ExpressReceiver } from "@slack/bolt";
 
 const receiver = new ExpressReceiver({ signingSecret: process.env.SLACK_SIGNING_SECRET });
 
-receiver.router.use(express.static('public'))
+receiver.router.use(express.static("public"));
 
 const app = new App({
   receiver,
@@ -11,16 +11,16 @@ const app = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
-app.command('/bym', async ({ command, ack, respond }) => {
+app.command("/bym", async ({ command, ack, respond }) => {
   console.log(`Received command: ${command.text}`);
   await ack();
   await respond({
+    response_type: "in_channel",
     text: `Echo: ${command.text}`,
-    in_channel: true,
   });
 });
 
 (async () => {
   await app.start(process.env.PORT || 3000);
-  console.log('Brew Your Mind bot is running!');
+  console.log("Brew Your Mind bot is running!");
 })();
