@@ -13,8 +13,8 @@ export async function dispatch(command: string): Promise<RespondArguments> {
         return await listProducts();
     } else if (HE_REGEX.test(command)) {
         const products = await scraping.allProductsWithDetails();
-        const newHe = await notifications.checkForHumanExperiment(products);
-        if (newHe) {
+        const heCandidate = await notifications.checkForHumanExperiment(products);
+        if (heCandidate) {
             return {
                 response_type: "ephemeral",
                 blocks: [
@@ -25,7 +25,7 @@ export async function dispatch(command: string): Promise<RespondArguments> {
                             text: "🚨 *Új Human Experiment!* 🚨",
                         }
                     },
-                    formatProduct(newHe),
+                    formatProduct(heCandidate),
                 ]
             };
         } else {
@@ -50,7 +50,7 @@ function showHelp(): Promise<RespondArguments> {
 }
 
 async function listProducts(): Promise<RespondArguments> {
-    const allProducts = await scraping.allProducts();
+    const allProducts = await scraping.allProductsWithDetails();
 
     return {
         response_type: "ephemeral",
@@ -65,7 +65,9 @@ async function listProducts(): Promise<RespondArguments> {
             {
                 "type": "divider"
             },
-            ...allProducts.map((product) => formatProduct(product))
+            ...allProducts
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((product) => formatProduct(product))
         ],
     };
 }
@@ -83,13 +85,18 @@ interface ProductBlock {
     };
 }
 
-function formatProduct(product: scraping.Product): ProductBlock {
+function formatProduct(product: scraping.DetailedProduct): ProductBlock {
     return {
         type: "section",
         text: {
             type: "mrkdwn",
-            text: `*<${product.url}|${product.originalName}>*`,
-            // TODO add more properties from detailed product?
+            text:
+                `*<${product.url}|${product.name}>*\n` +
+                (product.extra ? `_${product.extra}_\n` : "") +
+                `ABV: ${product.abv}%\n` +
+                `Ár: ${product.price} Ft\n` +
+                `Raktáron: ${product.stock} db\n`
+            ,
         },
         accessory: {
             type: "image",
