@@ -1,15 +1,39 @@
 import { RespondArguments } from "@slack/bolt";
 import * as scraping from "./scraping";
-import util from 'util';
+import * as notifications from "./notifications";
 
-const helpRegex = /(help)|(hogy(an?)\??)|(segítség)|(segits)|(segiccse)/i;
-const lsRegex = /(ls)|(mi ?van\??)/i;
+const HELP_REGEX = /(help)|(hogy(an?)\??)|(segítség)|(segits)|(segiccse)/i;
+const LS_REGEX = /(ls)|(mi ?van\??)/i;
+const HE_REGEX = /(he\??)/i;
 
 export async function dispatch(command: string): Promise<RespondArguments> {
-    if (helpRegex.test(command)) {
+    if (HELP_REGEX.test(command)) {
         return showHelp();
-    } else if (lsRegex.test(command)) {
+    } else if (LS_REGEX.test(command)) {
         return await listProducts();
+    } else if (HE_REGEX.test(command)) {
+        const products = await scraping.allProductsWithDetails();
+        const newHe = await notifications.checkForHumanExperiment(products);
+        if (newHe) {
+            return {
+                response_type: "ephemeral",
+                blocks: [
+                    {
+                        type: "section",
+                        text: {
+                            type: "mrkdwn",
+                            text: "🚨 *Új Human Experiment!* 🚨",
+                        }
+                    },
+                    formatProduct(newHe),
+                ]
+            };
+        } else {
+            return {
+                response_type: "ephemeral",
+                text: "Nincs új Human Experiment. 😢"
+            };
+        }
     } else {
         return showHelp();
     }
@@ -41,18 +65,36 @@ async function listProducts(): Promise<RespondArguments> {
             {
                 "type": "divider"
             },
-            ...allProducts.map((product) => ({
-                type: "section",
-                text: {
-                    type: "mrkdwn",
-                    text: `*<${product.link}|${product.name}>*`
-                },
-                accessory: {
-                    type: "image",
-                    image_url: product.image,
-                    alt_text: product.name
-                }
-            }))
+            ...allProducts.map((product) => formatProduct(product))
         ],
+    };
+}
+
+interface ProductBlock {
+    type: string;
+    text: {
+        type: string;
+        text: string;
+    };
+    accessory: {
+        type: string;
+        image_url: string;
+        alt_text: string;
+    };
+}
+
+function formatProduct(product: scraping.Product): ProductBlock {
+    return {
+        type: "section",
+        text: {
+            type: "mrkdwn",
+            text: `*<${product.url}|${product.originalName}>*`,
+            // TODO add more properties from detailed product?
+        },
+        accessory: {
+            type: "image",
+            image_url: product.image,
+            alt_text: product.originalName,
+        }
     };
 }

@@ -1,17 +1,19 @@
 import * as commands from "./commands";
-import * as cron from "node-cron";
-import express from "express";
+import * as notifications from "./notifications";
 import { App, ExpressReceiver } from "@slack/bolt";
 
-const receiver = new ExpressReceiver({ signingSecret: process.env.SLACK_SIGNING_SECRET });
+const receiver = new ExpressReceiver({
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  endpoints: "/slack/events",
+});
 
-// FIXME this doesn't look to be working
-receiver.router.use(express.static("public"));
+receiver.app.get("/health", (_, res) => {
+  res.status(200).send("bot is running");
+});
 
 const app = new App({
   receiver,
   token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
 app.command("/bym", async ({ command, ack, respond }) => {
@@ -21,24 +23,8 @@ app.command("/bym", async ({ command, ack, respond }) => {
   await respond(response);
 });
 
-async function checkAndReport() {
-  // TODO
-  //  - scrape
-  //  - check for new HE or Big Lies
-  //  - report on channel
-  console.log("Checking stock...");
-  //const result = await axios.post(process.env.BEER_CHANNEL_WEBHOOK_URL, {
-  //  text: `Szerintem az idő most kb. ${Date.now()}`
-  //});
-  //console.log(result);
-}
-
-cron.schedule(process.env.CHECK_CRON_SCHEDULE, async () => {
-  checkAndReport();
-});
-
 (async () => {
   await app.start(process.env.PORT || 3000);
   console.log("Brew Your Mind bot is running!");
-  checkAndReport();
+  notifications.start(process.env.NOTIFICATIONS_CRON_SCHEDULE);
 })();
