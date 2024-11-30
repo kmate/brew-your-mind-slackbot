@@ -2,5 +2,5 @@
 
 ## Features
 
-- [ ] Notify about new Human Experiment releases
+- [x] Notify about new Human Experiment releases
   - [ ] Extra notification when available quantity goes below a certain limit

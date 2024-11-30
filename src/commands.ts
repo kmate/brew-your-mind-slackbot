@@ -1,4 +1,5 @@
 import { RespondArguments } from "@slack/bolt";
+import * as responses from "./responses";
 import * as scraping from "./scraping";
 import * as notifications from "./notifications";
 
@@ -17,16 +18,7 @@ export async function dispatch(command: string): Promise<RespondArguments> {
         if (heCandidate) {
             return {
                 response_type: "ephemeral",
-                blocks: [
-                    {
-                        type: "section",
-                        text: {
-                            type: "mrkdwn",
-                            text: "🚨 *Új Human Experiment!* 🚨",
-                        }
-                    },
-                    formatProduct(heCandidate),
-                ]
+                ...responses.formatHumanExperimentNotification(heCandidate),
             };
         } else {
             return {
@@ -54,54 +46,6 @@ async function listProducts(): Promise<RespondArguments> {
 
     return {
         response_type: "ephemeral",
-        blocks: [
-            {
-                type: "section",
-                text: {
-                    type: "mrkdwn",
-                    text: "*A jelenlegi kínálat:*"
-                }
-            },
-            {
-                "type": "divider"
-            },
-            ...allProducts
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((product) => formatProduct(product))
-        ],
-    };
-}
-
-interface ProductBlock {
-    type: string;
-    text: {
-        type: string;
-        text: string;
-    };
-    accessory: {
-        type: string;
-        image_url: string;
-        alt_text: string;
-    };
-}
-
-function formatProduct(product: scraping.DetailedProduct): ProductBlock {
-    return {
-        type: "section",
-        text: {
-            type: "mrkdwn",
-            text:
-                `*<${product.url}|${product.name}>*\n` +
-                (product.extra ? `_${product.extra}_\n` : "") +
-                `ABV: ${product.abv}%\n` +
-                `Ár: ${product.price} Ft\n` +
-                `Raktáron: ${product.stock} db\n`
-            ,
-        },
-        accessory: {
-            type: "image",
-            image_url: product.image,
-            alt_text: product.originalName,
-        }
+        ...responses.formatProductList(allProducts),
     };
 }
