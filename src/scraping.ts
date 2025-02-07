@@ -18,9 +18,10 @@ export interface ParsedProductName {
 }
 
 const NAME_REGEXES = [
-    /^(?<name>.*?)\:\s+(?<extra>.*?)\s*\-?\s*(?<abv>\d+(?:,\d+)?)\s*%$/,
-    /^(?<name>.*?)\s+\-\s+(?<extra>.*?)\s*\-?\s*(?<abv>\d+(?:,\d+)?)\s*%$/,
-    /^(?<name>.*?)\s+(?<extra>APA|IPA|DIPA)\s*\-?\s*(?<abv>\d+(?:,\d+)?)\s*%$/,
+    /^(?<name>.*?)\:\s+(?<extra>.*?)\s*\-?\s*(?<abv>\d+(?:[\.,]\d+)?)\s*%$/,
+    /^(?<name>.*?)\s+\-\s+(?<extra>.*?)\s*\-?\s*(?<abv>\d+(?:[\.,]\d+)?)\s*%$/,
+    /^(?<name>.*?)\s+(?<extra>APA|IPA|DIPA)\s*\-?\s*(?<abv>\d+(?:[\.,]\d+)?)\s*%$/,
+    /^(?<name>.*?)\s+(?<abv>\d+(?:[\.,]\d+)?)\s*%$/,
 ];
 
 const EXTRA_SPLIT_REGEX = /\-|\+/g;
@@ -31,7 +32,7 @@ function parseProductName(name: string): ParsedProductName {
 
     return {
         name: groups?.name,
-        extra: groups?.extra.split(EXTRA_SPLIT_REGEX).map((x) => x.trim()).join(", "),
+        extra: groups?.extra?.split(EXTRA_SPLIT_REGEX).map((x) => x.trim()).join(", "),
         abv: Number.parseFloat(groups?.abv.replace(",", ".")),
     };
 }
