@@ -38,6 +38,7 @@ function parseProductName(name: string): ParsedProductName {
     };
 }
 
+// TODO: also there seem to be a mandatory pagination that we seem to fail sometimes...
 export async function allProducts(): Promise<Product[]> {
     const products = process.env.BYM_URLS_TO_SCRAPE.split(",").flatMap(async (url) => {
         const baseUrl = new URL(url).origin;
