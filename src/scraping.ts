@@ -17,6 +17,7 @@ export interface ParsedProductName {
     abv: number;
 }
 
+// TODO: add a fallback regex that catches any name...
 const NAME_REGEXES = [
     /^(?<name>.*?)\:\s+(?<extra>.*?)\s*\-?\s*(?<abv>\d+(?:[\.,]\d+)?)\s*%$/,
     /^(?<name>.*?)\s+\-\s+(?<extra>.*?)\s*\-?\s*(?<abv>\d+(?:[\.,]\d+)?)\s*%$/,
