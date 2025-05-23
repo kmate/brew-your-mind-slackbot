@@ -4,7 +4,6 @@ import * as english2numbers from "./english2numbers";
 import * as memory from "./memory";
 import * as responses from "./responses";
 import * as scraping from "./scraping";
-import { last } from "cheerio/dist/commonjs/api/traversing";
 
 export async function checkForHumanExperiment(products: scraping.DetailedProduct[]): Promise<scraping.DetailedProduct | undefined> {
     const heCandidate = products.find((p) => p.name.toLowerCase().includes("human experiment"));
@@ -21,13 +20,13 @@ async function checkAndReport() {
 
     if (heNumber > 0) {
         const things = await memory.recall();
-        if (things.lastHeSeen < heNumber) {
+        if (!things.humanExperimentsSeen.has(heNumber)) {
             console.log(`New Human Experiment available: ${heNumber}`);
-            const result = await axios.post(process.env.BEER_CHANNEL_WEBHOOK_URL, {
+            await axios.post(process.env.BEER_CHANNEL_WEBHOOK_URL, {
                 response_type: "in_channel",
                 ...responses.formatHumanExperimentNotification(heCandidate),
             });
-            memory.remember({ lastHeSeen: heNumber });
+            await memory.remember(heNumber);
         }
     }
 }
