@@ -53,7 +53,6 @@ export async function allProducts(): Promise<Product[]> {
                     name: {
                         selector: "h2.product-card__title",
                         value: (el, _) => {
-                            // TODO split percentage, name etc.
                             const text = $(el).text();
                             return text.trim();
                         },
