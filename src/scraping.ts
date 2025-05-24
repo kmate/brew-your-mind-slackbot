@@ -39,40 +39,44 @@ function parseProductName(name: string): ParsedProductName {
 }
 
 export async function allProducts(): Promise<Product[]> {
-    const products = process.env.BYM_URLS_TO_SCRAPE.split(",").flatMap(async (url) => {
-        const baseUrl = new URL(url).origin;
+    const productPromises = process.env.BYM_URLS_TO_SCRAPE.split(",").map(async (url) => {
+        try {
+            const baseUrl = new URL(url).origin;
+            const { data } = await axios.get(url);
+            const $ = cheerio.load(data);
 
-        const { data } = await axios.get(url);
-        const $ = cheerio.load(data);
-
-        return $.extract({
-            products: [{
-                selector: "div.product-card",
-                value: {
-                    name: {
-                        selector: "h2.product-card__title",
-                        value: (el, _) => {
-                            const text = $(el).text();
-                            return text.trim();
+            return $.extract({
+                products: [{
+                    selector: "div.product-card",
+                    value: {
+                        name: {
+                            selector: "h2.product-card__title",
+                            value: (el, _) => {
+                                const text = $(el).text();
+                                return text.trim();
+                            },
                         },
-                    },
-                    image: {
-                        selector: "img.product-card__image",
-                        value: "src",
-                    },
-                    url: {
-                        selector: "a",
-                        value: (el, _) => {
-                            const href = el.attribs["href"];
-                            return new URL(href, baseUrl).toString();
-                        }
-                    },
-                }
-            }]
-        });
+                        image: {
+                            selector: "img.product-card__image",
+                            value: "src",
+                        },
+                        url: {
+                            selector: "a",
+                            value: (el, _) => {
+                                const href = el.attribs["href"];
+                                return new URL(href, baseUrl).toString();
+                            }
+                        },
+                    }
+                }]
+            });
+        } catch (error) {
+            console.error(`Failed to fetch or parse ${url}:`, error instanceof Error ? error.message : String(error));
+            return { products: [] };
+        }
     });
 
-    const allProducts = (await Promise.all(products)).flatMap((x) => x.products.map((p) => {
+    const allProducts = (await Promise.all(productPromises)).flatMap((x) => x.products.map((p) => {
         const parsed = parseProductName(p.name);
         return {
             originalName: p.name,
