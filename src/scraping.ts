@@ -74,7 +74,7 @@ export async function allProducts(): Promise<Product[]> {
         });
     });
 
-    return (await Promise.all(products)).flatMap((x) => x.products.map((p) => {
+    const allProducts = (await Promise.all(products)).flatMap((x) => x.products.map((p) => {
         const parsed = parseProductName(p.name);
         return {
             originalName: p.name,
@@ -83,6 +83,8 @@ export async function allProducts(): Promise<Product[]> {
             url: p.url,
         };
     }));
+
+    return [...new Map(allProducts.map(item => [item.originalName, item])).values()];
 }
 
 export interface DetailedProduct extends Product {
